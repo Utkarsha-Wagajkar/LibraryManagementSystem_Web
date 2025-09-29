@@ -1,40 +1,38 @@
 <?php
 session_start();
 
-// Database connection
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = ""; // your MySQL password
 $dbname = "lms_db";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
-// Get login data
 $user = $_POST['username'];
 $pass = $_POST['password'];
 
-// Check database
-$sql = "SELECT * FROM users WHERE username='$user'";
+// Prevent SQL Injection
+$user = $conn->real_escape_string($user);
+$pass = $conn->real_escape_string($pass);
+
+// Check username + password together
+$sql = "SELECT * FROM users WHERE username='$user' AND password='$pass'";
 $result = $conn->query($sql);
 
 if ($result->num_rows == 1) {
     $row = $result->fetch_assoc();
-    if (password_verify($pass, $row['password'])) {
-        // Password correct
-        $_SESSION['username'] = $row['username'];
-        $_SESSION['role'] = $row['role'];
+    $_SESSION['username'] = $row['username'];
+    $_SESSION['role'] = $row['role'];
 
-        if ($row['role'] == 'admin') {
-            header("Location: admin/dashboard.html");
-        } else {
-            header("Location: member/dashboard.html");
-        }
+    if ($row['role'] == 'admin') {
+        header("Location: admin/dashboard.html");
     } else {
-        echo "Incorrect password!";
+        header("Location: member/dashboard.html");
     }
+    exit();
 } else {
-    echo "Username not found!";
+    echo "Invalid username or password!";
 }
 
 $conn->close();
