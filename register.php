@@ -1,17 +1,12 @@
 <?php
-// register.php
+// Database connection
 $servername = "localhost";
 $username = "root";
 $password = ""; // your MySQL password
 $dbname = "lms_db";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
 // Get form data
 $user = $_POST['username'];
@@ -24,8 +19,12 @@ if($pass != $confirm_pass){
     die("Passwords do not match!");
 }
 
+// Optional: hash password
+$hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
+
 // Insert into database
-$sql = "INSERT INTO users (username, email, password, role) VALUES ('$user', '$email', '$pass', 'member')";
+$sql = "INSERT INTO users (username, email, password, role) 
+        VALUES ('$user', '$email', '$hashed_pass', 'member')";
 
 if ($conn->query($sql) === TRUE) {
     echo "Registration successful! <a href='index.html'>Login here</a>";
